@@ -7,6 +7,7 @@ export default {
   		fontFamily: {
   			sans: [
   				'Inter',
+          'Plus Jakarta Sans',
   				'-apple-system',
   				'BlinkMacSystemFont',
   				'Segoe UI',
@@ -91,6 +92,8 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+        'cipher-blue': '#2563EB',
+        'cipher-lavender': '#A5B4FC',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			muted: {
@@ -144,8 +147,8 @@ export default {
   		},
   		boxShadow: {
   			soft: '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-  			glow: '0 0 20px -5px rgba(99, 102, 241, 0.4)',
-  			'glow-lg': '0 0 40px -10px rgba(99, 102, 241, 0.3)',
+  			glow: '0 0 20px -5px rgba(37, 99, 235, 0.5)',
+  			'glow-lg': '0 0 40px -10px rgba(37, 99, 235, 0.4)',
   			primary: '0 0 20px -5px hsl(var(--primary) / 0.4)',
   			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
   		},

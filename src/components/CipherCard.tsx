@@ -11,19 +11,6 @@ import { Progress } from '@/components/ui/progress';
 import { useCipherStore } from '@/hooks/useCipherStore';
 import { encryptFile, decryptFile } from '@/lib/crypto';
 import { cn } from '@/lib/utils';
-const logEvent = async (type: 'encrypt' | 'decrypt', fileSize: number) => {
-  try {
-    await fetch('/api/log', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ type, fileSize }),
-    });
-  } catch (error) {
-    console.warn('Failed to log analytics event:', error);
-  }
-};
 export function CipherCard() {
   const mode = useCipherStore(s => s.mode);
   const setMode = useCipherStore(s => s.setMode);
@@ -33,6 +20,7 @@ export function CipherCard() {
   const setPassphrase = useCipherStore(s => s.setPassphrase);
   const isLoading = useCipherStore(s => s.isLoading);
   const progress = useCipherStore(s => s.progress);
+  const error = useCipherStore(s => s.error);
   const startProcessing = useCipherStore(s => s.startProcessing);
   const setProgress = useCipherStore(s => s.setProgress);
   const setSuccess = useCipherStore(s => s.setSuccess);
@@ -83,16 +71,12 @@ export function CipherCard() {
       URL.revokeObjectURL(url);
       setSuccess(successMessage);
       toast.success(successMessage, { description: `Your file ${downloadFileName} has been downloaded.` });
-      // Log the successful event
-      logEvent(mode, file.size);
-      setTimeout(() => {
-        reset();
-      }, 3000);
+      reset();
     } catch (e) {
-      console.error("File processing error:", e);
-      const errorMessage = (mode === 'decrypt')
-        ? 'Decryption failed. Please check your passphrase and ensure it is the correct file.'
-        : 'An unexpected error occurred during encryption.';
+      console.error(e);
+      const errorMessage = e instanceof Error && e.message.includes('decryption failed')
+        ? 'Decryption failed. Please check your passphrase.'
+        : 'An unexpected error occurred.';
       setError(errorMessage);
       toast.error('Operation Failed', { description: errorMessage });
     }
@@ -100,12 +84,12 @@ export function CipherCard() {
   const actionText = useMemo(() => (mode === 'encrypt' ? 'Encrypt' : 'Decrypt'), [mode]);
   const isButtonDisabled = isLoading || !file || !passphrase;
   const renderFileDisplay = () => (
-    <div className="relative flex items-center justify-between p-3 mt-4 border rounded-lg bg-muted/50 gap-2">
-      <div className="flex items-center gap-3 min-w-0">
-        <File className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+    <div className="relative flex items-center justify-between p-3 mt-4 border rounded-lg bg-muted/50">
+      <div className="flex items-center gap-3">
+        <File className="w-5 h-5 text-muted-foreground" />
         <span className="text-sm font-medium truncate">{file?.name}</span>
       </div>
-      <Button variant="ghost" size="icon" className="w-6 h-6 flex-shrink-0" onClick={() => setFile(null)}>
+      <Button variant="ghost" size="icon" className="w-6 h-6" onClick={() => setFile(null)}>
         <X className="w-4 h-4" />
       </Button>
     </div>
@@ -139,22 +123,22 @@ export function CipherCard() {
               <Lock className="w-6 h-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold">encryptfile.online</CardTitle>
+          <CardTitle className="text-3xl font-bold">CipherDrop</CardTitle>
           <CardDescription>Secure, client-side file encryption</CardDescription>
           <TabsList className="grid w-full grid-cols-2 mx-auto mt-6 max-w-xs">
             <TabsTrigger value="encrypt"><Lock className="w-4 h-4 mr-2" />Encrypt</TabsTrigger>
             <TabsTrigger value="decrypt"><Unlock className="w-4 h-4 mr-2" />Decrypt</TabsTrigger>
           </TabsList>
         </CardHeader>
-        <TabsContent value={mode} className="p-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={mode}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={mode}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <TabsContent value={mode} className="p-0">
               <CardContent className="space-y-4">
                 {file ? renderFileDisplay() : renderDropzone()}
                 <div className="space-y-2">
@@ -162,15 +146,15 @@ export function CipherCard() {
                   <Input
                     id="passphrase"
                     type="password"
-                    placeholder="Enter a strong passphrase..."
+                    placeholder="Use a unique passphrase..."
                     value={passphrase}
                     onChange={(e) => setPassphrase(e.target.value)}
                     disabled={isLoading}
                   />
-                  <p className="text-xs text-muted-foreground pt-1">Use a unique phrase. Longer is stronger.</p>
+                  <p className="text-xs text-muted-foreground">E.g., "moonlight over the calm sea"</p>
                 </div>
                 {isLoading && (
-                  <div className="space-y-2 pt-2">
+                  <div className="space-y-2">
                     <Progress value={progress} className="w-full" />
                     <p className="text-sm text-center text-muted-foreground">Processing... this may take a moment.</p>
                   </div>
@@ -190,14 +174,14 @@ export function CipherCard() {
                     </>
                   )}
                 </Button>
-                <div className="flex items-center text-xs text-muted-foreground text-center">
-                  <ShieldCheck className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" />
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <ShieldCheck className="w-4 h-4 mr-2 text-green-500" />
                   <span>Your files never leave your browser. All encryption happens locally.</span>
                 </div>
               </CardFooter>
-            </motion.div>
-          </AnimatePresence>
-        </TabsContent>
+            </TabsContent>
+          </motion.div>
+        </AnimatePresence>
       </Tabs>
     </Card>
   );

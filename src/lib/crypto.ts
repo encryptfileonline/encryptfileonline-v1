@@ -1,35 +1,31 @@
+import argon2 from 'argon2-browser';
 const KEY_LENGTH = 32; // AES-256
-const IV_LENGTH = 12; // Recommended for AES-GCM
 const SALT_LENGTH = 16;
-const PBKDF2_ITERATIONS = 100000;
+const IV_LENGTH = 12; // Recommended for AES-GCM
+const ARGON_SALT_LENGTH = 16;
+const ARGON_TIME_COST = 4;
+const ARGON_MEMORY_COST = 65536; // 64MB
+const ARGON_PARALLELISM = 1;
 async function deriveKey(passphrase: string, salt: Uint8Array): Promise<CryptoKey> {
   const passwordEncoded = new TextEncoder().encode(passphrase);
-  const baseKey = await crypto.subtle.importKey(
-    'raw',
-    passwordEncoded,
-    { name: 'PBKDF2' },
-    false,
-    ['deriveKey']
-  );
-  return crypto.subtle.deriveKey(
-    {
-      name: 'PBKDF2',
-      salt: salt,
-      iterations: PBKDF2_ITERATIONS,
-      hash: 'SHA-256',
-    },
-    baseKey,
-    { name: 'AES-GCM', length: 256 },
-    true,
-    ['encrypt', 'decrypt']
-  );
+  const argonResult = await argon2.hash({
+    pass: passwordEncoded,
+    salt: salt,
+    time: ARGON_TIME_COST,
+    mem: ARGON_MEMORY_COST,
+    parallelism: ARGON_PARALLELISM,
+    hashLen: KEY_LENGTH,
+    type: argon2.ArgonType.Argon2id,
+  });
+  const keyData = argonResult.hash.slice(0, KEY_LENGTH);
+  return crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
 }
 export async function encryptFile(file: File, passphrase: string, onProgress: (p: number) => void): Promise<Blob> {
   onProgress(0);
   const fileBuffer = await file.arrayBuffer();
   onProgress(10);
-  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
-  const key = await deriveKey(passphrase, salt);
+  const argonSalt = crypto.getRandomValues(new Uint8Array(ARGON_SALT_LENGTH));
+  const key = await deriveKey(passphrase, argonSalt);
   onProgress(40);
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
   const encryptedContent = await crypto.subtle.encrypt(
@@ -38,11 +34,11 @@ export async function encryptFile(file: File, passphrase: string, onProgress: (p
     fileBuffer
   );
   onProgress(90);
-  // Prepend salt and IV to the encrypted data
-  const resultBuffer = new Uint8Array(salt.length + iv.length + encryptedContent.byteLength);
-  resultBuffer.set(salt, 0);
-  resultBuffer.set(iv, salt.length);
-  resultBuffer.set(new Uint8Array(encryptedContent), salt.length + iv.length);
+  // Prepend argonSalt and IV to the encrypted data
+  const resultBuffer = new Uint8Array(argonSalt.length + iv.length + encryptedContent.byteLength);
+  resultBuffer.set(argonSalt, 0);
+  resultBuffer.set(iv, argonSalt.length);
+  resultBuffer.set(new Uint8Array(encryptedContent), argonSalt.length + iv.length);
   onProgress(100);
   return new Blob([resultBuffer]);
 }
@@ -51,10 +47,10 @@ export async function decryptFile(file: File, passphrase: string, onProgress: (p
   const fileBuffer = await file.arrayBuffer();
   onProgress(10);
   const fileBytes = new Uint8Array(fileBuffer);
-  const salt = fileBytes.slice(0, SALT_LENGTH);
-  const iv = fileBytes.slice(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
-  const encryptedContent = fileBytes.slice(SALT_LENGTH + IV_LENGTH);
-  const key = await deriveKey(passphrase, salt);
+  const argonSalt = fileBytes.slice(0, ARGON_SALT_LENGTH);
+  const iv = fileBytes.slice(ARGON_SALT_LENGTH, ARGON_SALT_LENGTH + IV_LENGTH);
+  const encryptedContent = fileBytes.slice(ARGON_SALT_LENGTH + IV_LENGTH);
+  const key = await deriveKey(passphrase, argonSalt);
   onProgress(40);
   const decryptedContent = await crypto.subtle.decrypt(
     { name: 'AES-GCM', iv: iv },
