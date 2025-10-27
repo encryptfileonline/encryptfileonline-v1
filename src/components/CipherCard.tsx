@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Lock, Unlock, File, UploadCloud, X, ShieldCheck } from 'lucide-react';
+import { Lock, Unlock, File, UploadCloud, X, ShieldCheck, LockKeyhole } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -84,6 +84,12 @@ export function CipherCard() {
       toast.error('Operation Failed', { description: errorMessage });
     }
   };
+  const handleDemoFile = () => {
+    const demoContent = "This is a demo file for encryptfile.online. You can encrypt this and then try decrypting it with the same passphrase!";
+    const demoFile = new File([demoContent], "demo.txt", { type: "text/plain" });
+    setFile(demoFile);
+    toast.info("Demo file loaded", { description: "You can now encrypt 'demo.txt'." });
+  };
   const actionText = useMemo(() => (mode === 'encrypt' ? 'Encrypt' : 'Decrypt'), [mode]);
   const isButtonDisabled = isLoading || !file || !passphrase;
   const renderFileDisplay = () => (
@@ -110,23 +116,28 @@ export function CipherCard() {
     </div>
   );
   const renderDropzone = () => (
-    <div
-      {...getRootProps()}
-      className={cn(
-        'flex flex-col items-center justify-center p-8 mt-4 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300',
-        isDragActive ? 'border-solid border-cipher-blue bg-cipher-blue/10' : 'border-border hover:border-cipher-blue/50'
-      )}
-    >
-      <input {...getInputProps()} />
-      <motion.div
-        animate={{ scale: isDragActive ? 1.1 : 1 }}
-        transition={{ type: 'spring', stiffness: 300 }}
+    <div className="mt-4 text-center">
+      <div
+        {...getRootProps()}
+        className={cn(
+          'flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300',
+          isDragActive ? 'border-solid border-cipher-blue bg-cipher-blue/10' : 'border-border hover:border-cipher-blue/50'
+        )}
       >
-        <UploadCloud className={cn('w-12 h-12 mb-4 transition-colors', isDragActive ? 'text-cipher-blue' : 'text-muted-foreground')} />
-      </motion.div>
-      <p className="text-center text-muted-foreground">
-        {isDragActive ? 'Drop the file here...' : `Drag & drop a file here, or click to select`}
-      </p>
+        <input {...getInputProps()} />
+        <motion.div
+          animate={{ scale: isDragActive ? 1.1 : 1 }}
+          transition={{ type: 'spring', stiffness: 300 }}
+        >
+          <UploadCloud className={cn('w-12 h-12 mb-4 transition-colors', isDragActive ? 'text-cipher-blue' : 'text-muted-foreground')} />
+        </motion.div>
+        <p className="text-center text-muted-foreground">
+          {isDragActive ? 'Drop the file here...' : `Drag & drop a file here, or click to select`}
+        </p>
+      </div>
+      <Button variant="link" size="sm" className="mt-2 text-muted-foreground" onClick={handleDemoFile}>
+        Try with a demo file
+      </Button>
     </div>
   );
   return (
@@ -183,7 +194,24 @@ export function CipherCard() {
                   onClick={handleProcessFile}
                   disabled={isButtonDisabled}
                 >
-                  {isLoading ? 'Processing...' : (
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.1, 1],
+                          rotate: [0, 5, -5, 0],
+                        }}
+                        transition={{
+                          duration: 0.8,
+                          ease: "easeInOut",
+                          repeat: Infinity,
+                        }}
+                      >
+                        <LockKeyhole className="w-5 h-5 mr-2" />
+                      </motion.div>
+                      Processing...
+                    </div>
+                  ) : (
                     <>
                       {mode === 'encrypt' ? <Lock className="w-4 h-4 mr-2" /> : <Unlock className="w-4 h-4 mr-2" />}
                       {actionText} File
