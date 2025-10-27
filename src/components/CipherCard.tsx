@@ -152,6 +152,7 @@ export function CipherCard() {
                     onChange={(e) => setPassphrase(e.target.value)}
                     disabled={isLoading}
                   />
+                  <p className="text-xs text-muted-foreground pt-1">Use a unique phrase. Longer is stronger.</p>
                 </div>
                 {isLoading && (
                   <div className="space-y-2 pt-2">
