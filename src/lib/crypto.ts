@@ -1,4 +1,4 @@
-import * as argon2 from 'argon2-browser';
+import { hash, ArgonType } from 'argon2-browser';
 const KEY_LENGTH = 32; // AES-256
 const IV_LENGTH = 12; // Recommended for AES-GCM
 const ARGON_SALT_LENGTH = 16;
@@ -7,14 +7,14 @@ const ARGON_MEMORY_COST = 65536; // 64MB
 const ARGON_PARALLELISM = 1;
 async function deriveKey(passphrase: string, salt: Uint8Array): Promise<CryptoKey> {
   const passwordEncoded = new TextEncoder().encode(passphrase);
-  const argonResult = await argon2.hash({
+  const argonResult = await hash({
     pass: passwordEncoded,
     salt: salt,
     time: ARGON_TIME_COST,
     mem: ARGON_MEMORY_COST,
     parallelism: ARGON_PARALLELISM,
     hashLen: KEY_LENGTH,
-    type: argon2.ArgonType.Argon2id,
+    type: ArgonType.Argon2id,
   });
   const keyData = argonResult.hash.slice(0, KEY_LENGTH);
   return crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
