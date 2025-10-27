@@ -132,15 +132,15 @@ export function CipherCard() {
             <TabsTrigger value="decrypt"><Unlock className="w-4 h-4 mr-2" />Decrypt</TabsTrigger>
           </TabsList>
         </CardHeader>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={mode}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            <TabsContent value={mode} className="p-0">
+        <TabsContent value={mode} className="p-0">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={mode}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
               <CardContent className="space-y-4">
                 {file ? renderFileDisplay() : renderDropzone()}
                 <div className="space-y-2">
@@ -181,9 +181,9 @@ export function CipherCard() {
                   <span>Your files never leave your browser. All encryption happens locally.</span>
                 </div>
               </CardFooter>
-            </TabsContent>
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        </TabsContent>
       </Tabs>
     </Card>
   );
