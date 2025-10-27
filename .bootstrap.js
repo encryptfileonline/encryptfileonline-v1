@@ -77,13 +77,7 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [
-    "bun install react-dropzone react-confetti argon2-browser",
-    "bun add react-dropzone@^14.2.3",
-    "bun add react-confetti@^6.1.0",
-    "bun add argon2-browser@^1.18.0",
-    "bun remove argon2-browser"
-];
+    const commands = [];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');
