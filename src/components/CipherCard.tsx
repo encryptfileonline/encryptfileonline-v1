@@ -71,7 +71,9 @@ export function CipherCard() {
       URL.revokeObjectURL(url);
       setSuccess(successMessage);
       toast.success(successMessage, { description: `Your file ${downloadFileName} has been downloaded.` });
-      reset();
+      setTimeout(() => {
+        reset();
+      }, 3000);
     } catch (e) {
       console.error(e);
       const errorMessage = e instanceof Error && e.message.includes('decryption failed')
