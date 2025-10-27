@@ -1,6 +1,5 @@
-import argon2 from 'argon2-browser';
+import * as argon2 from 'argon2-browser';
 const KEY_LENGTH = 32; // AES-256
-const SALT_LENGTH = 16;
 const IV_LENGTH = 12; // Recommended for AES-GCM
 const ARGON_SALT_LENGTH = 16;
 const ARGON_TIME_COST = 4;
