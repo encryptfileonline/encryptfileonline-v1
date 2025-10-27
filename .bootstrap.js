@@ -90,7 +90,9 @@ function runSetupCommands() {
     "ls -F",
     "ls -F",
     "ls -F",
-    "ls -la"
+    "ls -la",
+    "rm -rf src/components/PassphraseStrengthMeter.tsx",
+    "rm -rf src/components/PrivacyPolicyDialog.tsx"
 ];
     
     if (commands.length === 0) {
