@@ -75,10 +75,10 @@ export function CipherCard() {
         reset();
       }, 3000);
     } catch (e) {
-      console.error(e);
-      const errorMessage = e instanceof Error && e.message.includes('decryption failed')
-        ? 'Decryption failed. Please check your passphrase.'
-        : 'An unexpected error occurred.';
+      console.error("File processing error:", e);
+      const errorMessage = (mode === 'decrypt')
+        ? 'Decryption failed. Please check your passphrase and ensure it is the correct file.'
+        : 'An unexpected error occurred during encryption.';
       setError(errorMessage);
       toast.error('Operation Failed', { description: errorMessage });
     }
@@ -125,7 +125,7 @@ export function CipherCard() {
               <Lock className="w-6 h-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold">CipherDrop</CardTitle>
+          <CardTitle className="text-3xl font-bold">encryptfile.online</CardTitle>
           <CardDescription>Secure, client-side file encryption</CardDescription>
           <TabsList className="grid w-full grid-cols-2 mx-auto mt-6 max-w-xs">
             <TabsTrigger value="encrypt"><Lock className="w-4 h-4 mr-2" />Encrypt</TabsTrigger>
