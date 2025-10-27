@@ -84,7 +84,8 @@ function runSetupCommands() {
     "bun add argon2-browser@^1.18.0",
     "bun remove argon2-browser",
     "grep -r \"argon2-browser\" .",
-    "ls -F src/lib"
+    "ls -F src/lib",
+    "grep -r \"argon2-browser\" ."
 ];
     
     if (commands.length === 0) {
