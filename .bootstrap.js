@@ -83,7 +83,8 @@ function runSetupCommands() {
     "bun add react-confetti@^6.1.0",
     "bun add argon2-browser@^1.18.0",
     "bun remove argon2-browser",
-    "grep -r \"argon2-browser\" ."
+    "grep -r \"argon2-browser\" .",
+    "ls -F src/lib"
 ];
     
     if (commands.length === 0) {
