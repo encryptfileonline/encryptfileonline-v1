@@ -1,18 +1,16 @@
 import React, { useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Lock, Unlock, File, UploadCloud, X, ShieldCheck, LockKeyhole } from 'lucide-react';
+import { Lock, Unlock, File, UploadCloud, X, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCipherStore } from '@/hooks/useCipherStore';
 import { encryptFile, decryptFile } from '@/lib/crypto';
-import { cn, formatFileSize } from '@/lib/utils';
-import { PassphraseStrengthMeter } from './PassphraseStrengthMeter';
+import { cn } from '@/lib/utils';
 export function CipherCard() {
   const mode = useCipherStore(s => s.mode);
   const setMode = useCipherStore(s => s.setMode);
@@ -84,60 +82,37 @@ export function CipherCard() {
       toast.error('Operation Failed', { description: errorMessage });
     }
   };
-  const handleDemoFile = () => {
-    const demoContent = "This is a demo file for encryptfile.online. You can encrypt this and then try decrypting it with the same passphrase!";
-    const demoFile = new File([demoContent], "demo.txt", { type: "text/plain" });
-    setFile(demoFile);
-    toast.info("Demo file loaded", { description: "You can now encrypt 'demo.txt'." });
-  };
   const actionText = useMemo(() => (mode === 'encrypt' ? 'Encrypt' : 'Decrypt'), [mode]);
   const isButtonDisabled = isLoading || !file || !passphrase;
   const renderFileDisplay = () => (
     <div className="relative flex items-center justify-between p-3 mt-4 border rounded-lg bg-muted/50 gap-2">
-      <TooltipProvider delayDuration={100}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center gap-3 min-w-0">
-              <File className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm font-medium truncate">{file?.name}</span>
-                <span className="text-xs text-muted-foreground">{file ? formatFileSize(file.size) : ''}</span>
-              </div>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{file?.name}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <div className="flex items-center gap-3 min-w-0">
+        <File className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+        <span className="text-sm font-medium truncate">{file?.name}</span>
+      </div>
       <Button variant="ghost" size="icon" className="w-6 h-6 flex-shrink-0" onClick={() => setFile(null)}>
         <X className="w-4 h-4" />
       </Button>
     </div>
   );
   const renderDropzone = () => (
-    <div className="mt-4 text-center">
-      <div
-        {...getRootProps()}
-        className={cn(
-          'flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300',
-          isDragActive ? 'border-solid border-cipher-blue bg-cipher-blue/10' : 'border-border hover:border-cipher-blue/50'
-        )}
+    <div
+      {...getRootProps()}
+      className={cn(
+        'flex flex-col items-center justify-center p-8 mt-4 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300',
+        isDragActive ? 'border-solid border-cipher-blue bg-cipher-blue/10' : 'border-border hover:border-cipher-blue/50'
+      )}
+    >
+      <input {...getInputProps()} />
+      <motion.div
+        animate={{ scale: isDragActive ? 1.1 : 1 }}
+        transition={{ type: 'spring', stiffness: 300 }}
       >
-        <input {...getInputProps()} />
-        <motion.div
-          animate={{ scale: isDragActive ? 1.1 : 1 }}
-          transition={{ type: 'spring', stiffness: 300 }}
-        >
-          <UploadCloud className={cn('w-12 h-12 mb-4 transition-colors', isDragActive ? 'text-cipher-blue' : 'text-muted-foreground')} />
-        </motion.div>
-        <p className="text-center text-muted-foreground">
-          {isDragActive ? 'Drop the file here...' : `Drag & drop a file here, or click to select`}
-        </p>
-      </div>
-      <Button variant="link" size="sm" className="mt-2 text-muted-foreground" onClick={handleDemoFile}>
-        Try with a demo file
-      </Button>
+        <UploadCloud className={cn('w-12 h-12 mb-4 transition-colors', isDragActive ? 'text-cipher-blue' : 'text-muted-foreground')} />
+      </motion.div>
+      <p className="text-center text-muted-foreground">
+        {isDragActive ? 'Drop the file here...' : `Drag & drop a file here, or click to select`}
+      </p>
     </div>
   );
   return (
@@ -177,8 +152,6 @@ export function CipherCard() {
                     onChange={(e) => setPassphrase(e.target.value)}
                     disabled={isLoading}
                   />
-                  <PassphraseStrengthMeter passphrase={passphrase} />
-                  <p className="text-xs text-muted-foreground pt-1">Use a unique phrase like ‘moonlight over the calm sea’ — longer is stronger.</p>
                 </div>
                 {isLoading && (
                   <div className="space-y-2 pt-2">
@@ -194,24 +167,7 @@ export function CipherCard() {
                   onClick={handleProcessFile}
                   disabled={isButtonDisabled}
                 >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.1, 1],
-                          rotate: [0, 5, -5, 0],
-                        }}
-                        transition={{
-                          duration: 0.8,
-                          ease: "easeInOut",
-                          repeat: Infinity,
-                        }}
-                      >
-                        <LockKeyhole className="w-5 h-5 mr-2" />
-                      </motion.div>
-                      Processing...
-                    </div>
-                  ) : (
+                  {isLoading ? 'Processing...' : (
                     <>
                       {mode === 'encrypt' ? <Lock className="w-4 h-4 mr-2" /> : <Unlock className="w-4 h-4 mr-2" />}
                       {actionText} File
@@ -220,7 +176,7 @@ export function CipherCard() {
                 </Button>
                 <div className="flex items-center text-xs text-muted-foreground text-center">
                   <ShieldCheck className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" />
-                  <span>Encryption happens locally in your browser — we never see or store your files.</span>
+                  <span>Your files never leave your browser. All encryption happens locally.</span>
                 </div>
               </CardFooter>
             </motion.div>

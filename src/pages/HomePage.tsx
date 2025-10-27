@@ -7,14 +7,11 @@ import { Toaster } from '@/components/ui/sonner';
 import { CipherCard } from '@/components/CipherCard';
 import { useCipherStore } from '@/hooks/useCipherStore';
 import { useTheme } from '@/hooks/use-theme';
-import { PrivacyPolicyDialog } from '@/components/PrivacyPolicyDialog';
-import { Button } from '@/components/ui/button';
 export function HomePage() {
   const { width, height } = useWindowSize();
   const isSuccess = useCipherStore((s) => s.isSuccess);
   const { isDark } = useTheme();
   const [showConfetti, setShowConfetti] = useState(false);
-  const [isPolicyOpen, setIsPolicyOpen] = useState(false);
   useEffect(() => {
     if (isSuccess) {
       setShowConfetti(true);
@@ -34,12 +31,8 @@ export function HomePage() {
       <div className="relative z-20 flex flex-col items-center justify-center w-full">
         <CipherCard />
       </div>
-      <footer className="absolute bottom-6 text-center text-muted-foreground/80 text-sm z-20 flex flex-col sm:flex-row items-center gap-x-4 gap-y-2">
+      <footer className="absolute bottom-6 text-center text-muted-foreground/80 text-sm z-20">
         <p>© {new Date().getFullYear()} encryptfile.online</p>
-        <div className="hidden sm:block w-px h-4 bg-muted-foreground/50"></div>
-        <Button variant="link" className="p-0 h-auto text-muted-foreground/80 hover:text-foreground" onClick={() => setIsPolicyOpen(true)}>
-          Privacy Policy
-        </Button>
       </footer>
       <AnimatePresence>
         {showConfetti && (
@@ -53,7 +46,6 @@ export function HomePage() {
         )}
       </AnimatePresence>
       <Toaster richColors closeButton theme={isDark ? 'dark' : 'light'} />
-      <PrivacyPolicyDialog open={isPolicyOpen} onOpenChange={setIsPolicyOpen} />
     </main>
   );
 }
