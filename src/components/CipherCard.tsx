@@ -11,7 +11,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCipherStore } from '@/hooks/useCipherStore';
 import { encryptFile, decryptFile } from '@/lib/crypto';
-import { cn } from '@/lib/utils';
+import { cn, formatFileSize } from '@/lib/utils';
+import { PassphraseStrengthMeter } from './PassphraseStrengthMeter';
 export function CipherCard() {
   const mode = useCipherStore(s => s.mode);
   const setMode = useCipherStore(s => s.setMode);
@@ -21,7 +22,6 @@ export function CipherCard() {
   const setPassphrase = useCipherStore(s => s.setPassphrase);
   const isLoading = useCipherStore(s => s.isLoading);
   const progress = useCipherStore(s => s.progress);
-  const error = useCipherStore(s => s.error);
   const startProcessing = useCipherStore(s => s.startProcessing);
   const setProgress = useCipherStore(s => s.setProgress);
   const setSuccess = useCipherStore(s => s.setSuccess);
@@ -93,7 +93,10 @@ export function CipherCard() {
           <TooltipTrigger asChild>
             <div className="flex items-center gap-3 min-w-0">
               <File className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm font-medium truncate">{file?.name}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium truncate">{file?.name}</span>
+                <span className="text-xs text-muted-foreground">{file ? formatFileSize(file.size) : ''}</span>
+              </div>
             </div>
           </TooltipTrigger>
           <TooltipContent>
@@ -158,15 +161,16 @@ export function CipherCard() {
                   <Input
                     id="passphrase"
                     type="password"
-                    placeholder="Use a unique passphrase..."
+                    placeholder="Enter a strong passphrase..."
                     value={passphrase}
                     onChange={(e) => setPassphrase(e.target.value)}
                     disabled={isLoading}
                   />
-                  <p className="text-xs text-muted-foreground">E.g., "moonlight over the calm sea"</p>
+                  <PassphraseStrengthMeter passphrase={passphrase} />
+                  <p className="text-xs text-muted-foreground pt-1">Use a unique phrase like ‘moonlight over the calm sea’ — longer is stronger.</p>
                 </div>
                 {isLoading && (
-                  <div className="space-y-2">
+                  <div className="space-y-2 pt-2">
                     <Progress value={progress} className="w-full" />
                     <p className="text-sm text-center text-muted-foreground">Processing... this may take a moment.</p>
                   </div>
@@ -186,9 +190,9 @@ export function CipherCard() {
                     </>
                   )}
                 </Button>
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <ShieldCheck className="w-4 h-4 mr-2 text-green-500" />
-                  <span>Your files never leave your browser. All encryption happens locally.</span>
+                <div className="flex items-center text-xs text-muted-foreground text-center">
+                  <ShieldCheck className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" />
+                  <span>Encryption happens locally in your browser — we never see or store your files.</span>
                 </div>
               </CardFooter>
             </motion.div>
