@@ -89,7 +89,8 @@ function runSetupCommands() {
     "grep -r \"argon2-browser\" .",
     "ls -F",
     "ls -F",
-    "ls -F"
+    "ls -F",
+    "ls -la"
 ];
     
     if (commands.length === 0) {
