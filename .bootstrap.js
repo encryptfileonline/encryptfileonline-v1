@@ -82,7 +82,8 @@ function runSetupCommands() {
     "bun add react-dropzone@^14.2.3",
     "bun add react-confetti@^6.1.0",
     "bun add argon2-browser@^1.18.0",
-    "bun remove argon2-browser"
+    "bun remove argon2-browser",
+    "grep -r \"argon2-browser\" ."
 ];
     
     if (commands.length === 0) {
