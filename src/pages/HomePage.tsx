@@ -32,7 +32,7 @@ export function HomePage() {
         <CipherCard />
       </div>
       <footer className="absolute bottom-6 text-center text-muted-foreground/80 text-sm z-20">
-        <p>Built with ❤️ at Cloudflare</p>
+        <p>© encryptfile.online</p>
       </footer>
       <AnimatePresence>
         {showConfetti && (
