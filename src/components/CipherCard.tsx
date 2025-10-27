@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCipherStore } from '@/hooks/useCipherStore';
 import { encryptFile, decryptFile } from '@/lib/crypto';
 import { cn } from '@/lib/utils';
@@ -86,12 +87,21 @@ export function CipherCard() {
   const actionText = useMemo(() => (mode === 'encrypt' ? 'Encrypt' : 'Decrypt'), [mode]);
   const isButtonDisabled = isLoading || !file || !passphrase;
   const renderFileDisplay = () => (
-    <div className="relative flex items-center justify-between p-3 mt-4 border rounded-lg bg-muted/50">
-      <div className="flex items-center gap-3">
-        <File className="w-5 h-5 text-muted-foreground" />
-        <span className="text-sm font-medium truncate">{file?.name}</span>
-      </div>
-      <Button variant="ghost" size="icon" className="w-6 h-6" onClick={() => setFile(null)}>
+    <div className="relative flex items-center justify-between p-3 mt-4 border rounded-lg bg-muted/50 gap-2">
+      <TooltipProvider delayDuration={100}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-3 min-w-0">
+              <File className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              <span className="text-sm font-medium truncate">{file?.name}</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{file?.name}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <Button variant="ghost" size="icon" className="w-6 h-6 flex-shrink-0" onClick={() => setFile(null)}>
         <X className="w-4 h-4" />
       </Button>
     </div>
