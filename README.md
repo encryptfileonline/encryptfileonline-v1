@@ -1,6 +1,6 @@
 # encryptfile.online
 A modern, minimal, and secure browser-based tool for client-side file encryption and decryption.
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/encryptfileonline/encryptfileonline-v1)
 encryptfile.online is an ultra-modern, minimalist web application designed for secure, client-side file encryption and decryption. Built with a strong focus on user experience and visual elegance, it allows users to encrypt files directly in their browser using the robust WebCrypto API (AES-256-GCM) and a strong key derivation function. The core philosophy is 'zero-trust,' meaning no files, passphrases, or keys ever leave the user's device.
 ## ✨ Key Features
 -   **Secure Client-Side Encryption**: All encryption and decryption happens directly in your browser using the WebCrypto API (AES-256-GCM).
@@ -55,7 +55,7 @@ bun run deploy
 ```
 This command will build the application and deploy it to your Cloudflare account using Wrangler.
 Alternatively, you can deploy your own version with a single click.
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/encryptfileonline/encryptfileonline-v1)
 ## 🔒 Security Notice
 -   **Client-Side Only**: encryptfile.online operates entirely within your browser. Your files and passphrases are never uploaded to any server.
 -   **Passphrase Security**: You are solely responsible for your passphrase. If you forget it, there is **no way to recover it** or decrypt your files. Choose a strong, memorable passphrase.
