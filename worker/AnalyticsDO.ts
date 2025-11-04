@@ -4,6 +4,7 @@ interface Log {
   timestamp: string;
   level: 'INFO' | 'WARN' | 'ERROR';
   message: string;
+  fileSize?: number;
 }
 interface Stats {
   totalOperations: number;
@@ -27,32 +28,24 @@ export class AnalyticsDO {
       await this.logEvent(type, fileSize);
       return c.json({ success: true });
     });
-    this.app.get('/stats', async (c) => {
+    this.app.get('/api/admin/stats', async (c) => {
       const stats = await this.getStats();
       return c.json({ success: true, data: stats });
     });
-    this.app.get('/logs', async (c) => {
+    this.app.get('/api/admin/logs', async (c) => {
       const logs = await this.getLogs();
       return c.json({ success: true, data: logs });
     });
-    this.app.get('/health', async (c) => {
+    this.app.get('/api/admin/health', async (c) => {
       const health = await this.getHealth();
       return c.json({ success: true, data: health });
     });
   }
   async fetch(request: Request) {
-    // The ExecutionContext for a DO's fetch is implicitly handled by the runtime.
-    // Hono's fetch can accept a context object that implements `waitUntil`.
-    // `this.state` provides `waitUntil`, so we can pass it as the context.
-    return this.app.fetch(request, this.env, this.state as any);
-  }
-  formatBytes(bytes: number, decimals = 2) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    return this.app.fetch(request, this.env, {
+      waitUntil: (promise) => this.state.waitUntil(promise),
+      passThroughOnException: () => {},
+    });
   }
   async logEvent(type: 'encrypt' | 'decrypt', fileSize: number) {
     const stats: Stats = (await this.state.storage.get('stats')) || {
@@ -73,7 +66,8 @@ export class AnalyticsDO {
       id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       level: 'INFO',
-      message: `User ${type}ed a file (${this.formatBytes(fileSize)}).`,
+      message: `User ${type}ed a file.`,
+      fileSize: fileSize,
     };
     // Keep logs to a reasonable size, e.g., last 100 entries
     const updatedLogs = [newLog, ...logs].slice(0, 100);
@@ -90,11 +84,19 @@ export class AnalyticsDO {
     const avgFileSize = stats.totalOperations > 0
       ? (stats.totalBytesProcessed / stats.totalOperations)
       : 0;
+    const formatBytes = (bytes: number, decimals = 2) => {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const dm = decimals < 0 ? 0 : decimals;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
     return {
       totalOperations: stats.totalOperations,
       encryptions: stats.encryptions,
       decryptions: stats.decryptions,
-      avgFileSize: this.formatBytes(avgFileSize),
+      avgFileSize: formatBytes(avgFileSize),
     };
   }
   async getLogs() {

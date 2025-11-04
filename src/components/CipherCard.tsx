@@ -11,6 +11,19 @@ import { Progress } from '@/components/ui/progress';
 import { useCipherStore } from '@/hooks/useCipherStore';
 import { encryptFile, decryptFile } from '@/lib/crypto';
 import { cn } from '@/lib/utils';
+const logEvent = async (type: 'encrypt' | 'decrypt', fileSize: number) => {
+  try {
+    await fetch('/api/log', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ type, fileSize }),
+    });
+  } catch (error) {
+    console.warn('Failed to log analytics event:', error);
+  }
+};
 export function CipherCard() {
   const mode = useCipherStore(s => s.mode);
   const setMode = useCipherStore(s => s.setMode);
@@ -70,6 +83,8 @@ export function CipherCard() {
       URL.revokeObjectURL(url);
       setSuccess(successMessage);
       toast.success(successMessage, { description: `Your file ${downloadFileName} has been downloaded.` });
+      // Log the successful event
+      logEvent(mode, file.size);
       setTimeout(() => {
         reset();
       }, 3000);
