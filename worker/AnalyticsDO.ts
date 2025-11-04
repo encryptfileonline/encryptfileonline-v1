@@ -4,7 +4,6 @@ interface Log {
   timestamp: string;
   level: 'INFO' | 'WARN' | 'ERROR';
   message: string;
-  fileSize?: number;
 }
 interface Stats {
   totalOperations: number;
@@ -42,10 +41,18 @@ export class AnalyticsDO {
     });
   }
   async fetch(request: Request) {
-    return this.app.fetch(request, this.env, {
-      waitUntil: (promise) => this.state.waitUntil(promise),
-      passThroughOnException: () => {},
-    });
+    // The ExecutionContext for a DO's fetch is implicitly handled by the runtime.
+    // Hono's fetch can accept a context object that implements `waitUntil`.
+    // `this.state` provides `waitUntil`, so we can pass it as the context.
+    return this.app.fetch(request, this.env, this.state);
+  }
+  formatBytes(bytes: number, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
   async logEvent(type: 'encrypt' | 'decrypt', fileSize: number) {
     const stats: Stats = (await this.state.storage.get('stats')) || {
@@ -66,8 +73,7 @@ export class AnalyticsDO {
       id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       level: 'INFO',
-      message: `User ${type}ed a file.`,
-      fileSize: fileSize,
+      message: `User ${type}ed a file (${this.formatBytes(fileSize)}).`,
     };
     // Keep logs to a reasonable size, e.g., last 100 entries
     const updatedLogs = [newLog, ...logs].slice(0, 100);
@@ -84,19 +90,11 @@ export class AnalyticsDO {
     const avgFileSize = stats.totalOperations > 0
       ? (stats.totalBytesProcessed / stats.totalOperations)
       : 0;
-    const formatBytes = (bytes: number, decimals = 2) => {
-      if (bytes === 0) return '0 Bytes';
-      const k = 1024;
-      const dm = decimals < 0 ? 0 : decimals;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-    }
     return {
       totalOperations: stats.totalOperations,
       encryptions: stats.encryptions,
       decryptions: stats.decryptions,
-      avgFileSize: formatBytes(avgFileSize),
+      avgFileSize: this.formatBytes(avgFileSize),
     };
   }
   async getLogs() {
