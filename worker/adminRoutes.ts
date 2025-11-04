@@ -13,19 +13,19 @@ adminRoutes.get('/api/admin/ping', (c) => {
 // Get dashboard stats
 adminRoutes.get('/api/admin/stats', async (c) => {
   const analyticsDO = getDO(c);
-  const resp = await analyticsDO.fetch(new Request(c.req.url, c.req.raw));
+  const resp = await analyticsDO.fetch(new Request('http://do/stats', c.req.raw));
   return resp;
 });
 // Get logs
 adminRoutes.get('/api/admin/logs', async (c) => {
   const analyticsDO = getDO(c);
-  const resp = await analyticsDO.fetch(new Request(c.req.url, c.req.raw));
+  const resp = await analyticsDO.fetch(new Request('http://do/logs', c.req.raw));
   return resp;
 });
 // Get system health
 adminRoutes.get('/api/admin/health', async (c) => {
   const analyticsDO = getDO(c);
-  const resp = await analyticsDO.fetch(new Request(c.req.url, c.req.raw));
+  const resp = await analyticsDO.fetch(new Request('http://do/health', c.req.raw));
   return resp;
 });
 export { adminRoutes };

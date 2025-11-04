@@ -27,15 +27,15 @@ export class AnalyticsDO {
       await this.logEvent(type, fileSize);
       return c.json({ success: true });
     });
-    this.app.get('/api/admin/stats', async (c) => {
+    this.app.get('/stats', async (c) => {
       const stats = await this.getStats();
       return c.json({ success: true, data: stats });
     });
-    this.app.get('/api/admin/logs', async (c) => {
+    this.app.get('/logs', async (c) => {
       const logs = await this.getLogs();
       return c.json({ success: true, data: logs });
     });
-    this.app.get('/api/admin/health', async (c) => {
+    this.app.get('/health', async (c) => {
       const health = await this.getHealth();
       return c.json({ success: true, data: health });
     });
@@ -44,7 +44,7 @@ export class AnalyticsDO {
     // The ExecutionContext for a DO's fetch is implicitly handled by the runtime.
     // Hono's fetch can accept a context object that implements `waitUntil`.
     // `this.state` provides `waitUntil`, so we can pass it as the context.
-    return this.app.fetch(request, this.env, this.state);
+    return this.app.fetch(request, this.env, this.state as any);
   }
   formatBytes(bytes: number, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
